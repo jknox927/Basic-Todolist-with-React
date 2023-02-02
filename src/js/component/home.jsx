@@ -27,11 +27,15 @@ const Home = () => {
 	useEffect(async () => {
 		const res = await fetch('https://assets.breatheco.de/apis/fake/todos/user/joshuaknox', {method: 'GET'});
 		const data = await res.json();
+		console.log(data);
 		setTodos(data);
 	}, [])
 
 	// Run when list changes
 	useEffect(async () => {
+		// if (todos.length === 0) {
+		// 	setTodos([{}])
+		// }
 		const options = {
 			method: 'PUT',
 			headers: {'Content-Type': 'application/json'},
