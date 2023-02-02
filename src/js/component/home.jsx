@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 //create your first component
 const Home = () => {
@@ -8,7 +8,7 @@ const Home = () => {
 	// Handle input on Enter key press
 	const pressEnter = (e) => {
 		if (e.key === "Enter") {
-			setTodos(todos.concat([inputValue]));
+			setTodos([{label: inputValue, done: false}, ...todos]);
 			setInputValue("");
 		}
 	}
@@ -22,6 +22,23 @@ const Home = () => {
 			)
 		)
 	}
+
+	// On load, populate list
+	useEffect(async () => {
+		const res = await fetch('https://assets.breatheco.de/apis/fake/todos/user/joshuaknox', {method: 'GET'});
+		const data = await res.json();
+		setTodos(data);
+	}, [])
+
+	// Run when list changes
+	useEffect(async () => {
+		const options = {
+			method: 'PUT',
+			headers: {'Content-Type': 'application/json'},
+			body: JSON.stringify(todos)
+		  };
+		  const res = await fetch('https://assets.breatheco.de/apis/fake/todos/user/joshuaknox', options);
+	}, [todos])
 
   return (
     <div className="container">
@@ -42,7 +59,7 @@ const Home = () => {
 		*/}
         {todos.map((item, index) => (
           <li>
-            {item}{" "}
+            {item.label}{" "}
             <i
               className="fas fa-trash-alt"
               onClick={() => clickDelete(index)}
