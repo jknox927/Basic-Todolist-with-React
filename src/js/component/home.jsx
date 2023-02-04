@@ -1,77 +1,97 @@
 import React, { useState, useEffect } from "react";
 
-//create your first component
 const Home = () => {
-	const [inputValue, setInputValue] = useState("");
-	const [todos, setTodos] = useState([]);
+  const [newTask, setNewTask] = useState("");
+  const [tasks, setTasks] = useState([]);
 
-	// Handle input on Enter key press
-	const pressEnter = (e) => {
-		if (e.key === "Enter") {
-			setTodos([{label: inputValue, done: false}, ...todos]);
-			setInputValue("");
-		}
-	}
+  const getTasks = () => {
+    const options = {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    };
 
-	// Handle delete on icon click
-	const clickDelete = (index) => {
-		setTodos(
-			todos.filter(
-				(t, currentIndex) =>
-				index != currentIndex
-			)
-		)
-	}
+    fetch(
+      "https://assets.breatheco.de/apis/fake/todos/user/joshuaknox",
+      options
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        setTasks(data.slice(1));
+      })
+      .catch((err) => console.error(err));
+  };
 
-	// On load, populate list
-	useEffect(async () => {
-		const res = await fetch('https://assets.breatheco.de/apis/fake/todos/user/joshuaknox', {method: 'GET'});
-		const data = await res.json();
-		console.log(data);
-		setTodos(data);
-	}, [])
+  const putTasks = () => {
+    const options = {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify([{ label: "CANNOT DELETE", done: false }, ...tasks]),
+    };
 
-	// Run when list changes
-	useEffect(async () => {
-		// if (todos.length === 0) {
-		// 	setTodos([{}])
-		// }
-		const options = {
-			method: 'PUT',
-			headers: {'Content-Type': 'application/json'},
-			body: JSON.stringify(todos)
-		  };
-		  const res = await fetch('https://assets.breatheco.de/apis/fake/todos/user/joshuaknox', options);
-	}, [todos])
+    fetch(
+      "https://assets.breatheco.de/apis/fake/todos/user/joshuaknox",
+      options
+    ).catch((err) => console.error(err));
+  };
+
+  const addTask = () => {
+    setTasks([{ label: newTask, done: false }, ...tasks]);
+    setNewTask("");
+  };
+
+  // Reference error: params 'item, index' exist in component local scope
+  //   const deleteTask = () => {
+  //     setTasks(tasks.filter((t, currentIndex) => index !== currentIndex));
+  //   };
+
+  useEffect(() => {
+    getTasks();
+  }, []);
+
+  useEffect(() => {
+    putTasks();
+  }, [tasks]);
 
   return (
-    <div className="container">
-      <h1 className="text-center">todos</h1>
-      <ul>
+    <div className="container p-5" style={{ width: "36rem" }}>
+      <h1 className="text-center">Tasks</h1>
+      <div className="d-flex input-group mb-3">
         <input
+          className="form-control me-2 text-bg-light rounded"
           type="text"
-          onChange={(e) => setInputValue(e.target.value)}
-          value={inputValue}
-          onKeyDown={pressEnter}
-          placeholder="What needs to be done?"
+          value={newTask}
+          placeholder="Add a task..."
+          onChange={(event) => setNewTask(event.target.value)}
         />
-		{/*
-			For each item in 'todos' and the index,
-			Create a <li> element.
-			On click function filters each item in the array
-			to delete the clicked item.
-		*/}
-        {todos.map((item, index) => (
-          <li>
-            {item.label}{" "}
-            <i
-              className="fas fa-trash-alt"
-              onClick={() => clickDelete(index)}
-            ></i>
-          </li>
-        ))}
-		<div className="tasksLeft">{todos.length} items left</div>
-      </ul>
+        <button
+          className="btn text-bg-success rounded"
+          onClick={addTask}
+        >
+          Add
+        </button>
+      </div>
+      <div className="taskList card">
+        <ul className="list-group list-group-flush">
+          {tasks.map((item, index) => (
+            <li
+              className="taskItem d-flex justify-content-between list-group-item"
+              key={index}
+            >
+              <strong>{item.label}</strong>
+              <button
+                className="deleteBtn"
+                onClick={() =>
+                  setTasks(
+                    tasks.filter((target, currentIndex) => index !== currentIndex)
+                  )
+                }
+              >
+                Delete
+              </button>
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 };
